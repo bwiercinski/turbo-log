@@ -1,9 +1,10 @@
 # turbo-log README
 
 `turbo-log` is usefull tool when you have to read log files from remote (of localhost) server.
-Thanks to Emil Åström's **Log File Highlighter** data is very readable.
 
-![feature X](assets/showcase.gif)
+Thanks to Emil Åström's **Log File Highlighter** data is very readable. Its recomended to install this language support.
+
+![feature X](https://github.com/FachmannPremium/turbo-log/raw/master/assets/showcase.gif)
 
 ## Features
 
@@ -19,8 +20,4 @@ Expand this list by adding issue.
 
 ## Release Notes
 
-
-
-### 1.0.0
-
-Initial release
+[Release Notes](CHANGELOG.md)

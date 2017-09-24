@@ -2,7 +2,7 @@
     "name": "turbo-log",
     "displayName": "Turbo Log",
     "description": "tail -f functionality",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "publisher": "fachmann",
     "license": "SEE LICENSE IN LICENSE",
     "icon": "assets/icon.png",
@@ -30,9 +30,6 @@
     "activationEvents": [
         "onCommand:turboLog.startSession",
         "onCommand:turboLog.newSession"
-    ],
-    "extensionDependencies": [
-        "emilast.logfilehighlighter"
     ],
     "main": "./out/src/extension",
     "contributes": {

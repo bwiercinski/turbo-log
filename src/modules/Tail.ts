@@ -1,7 +1,7 @@
-import * as vscode from 'vscode'
-import { SftpClient } from './SftpClient'
-import { FileChangeListener } from './FileChangeListener'
-import { EventEmitter } from 'events'
+import * as vscode from 'vscode';
+import { SftpClient } from './SftpClient';
+import { FileChangeListener } from './FileChangeListener';
+import { EventEmitter } from 'events';
 
 export class Tail extends EventEmitter {
     sftpClient: SftpClient;
@@ -11,6 +11,8 @@ export class Tail extends EventEmitter {
     onLine: (string: string) => Thenable<void>;
 
     firstRun = true;
+    linesQueue: string[] = [];
+    writing: boolean = false;
 
     constructor(tailOptions: TailOptions, onLine: (string: string) => Thenable<void>) {
         super();
@@ -39,7 +41,7 @@ export class Tail extends EventEmitter {
 
     update(range: any = {}) {
         var chunks: Buffer[] = [];
-        try{
+        try {
             var readStream = this.sftpClient.sftp.createReadStream(this.tailOptions.path, range);
             readStream.on('data', (chunk: Buffer) => {
                 chunks.push(chunk);
@@ -49,12 +51,12 @@ export class Tail extends EventEmitter {
             }).on('end', () => {
                 this.processChunks(chunks);
                 this.firstRun = false;
-    
+
                 if (!this.tailOptions.follow) {
                     this.stop();
                 }
             });
-        } catch(e) {
+        } catch (e) {
             vscode.window.showErrorMessage(e.message);
             console.error(e);
         }
@@ -68,10 +70,13 @@ export class Tail extends EventEmitter {
         var content: Buffer = Buffer.concat(chunks);
         var lines = this.bufferToLines(content);
 
+        console.log(lines);
+
         if (this.firstRun) {
-            lines = lines.slice(lines.length - this.tailOptions.n, lines.length);
+            lines = lines.slice(Math.max(0, lines.length - this.tailOptions.n), lines.length);
         }
-        this.sendLines(lines);
+        this.linesQueue = this.linesQueue.concat(lines);
+        this.sendLines();
     }
 
     private bufferToLines(buffer: Buffer): string[] {
@@ -88,14 +93,20 @@ export class Tail extends EventEmitter {
         return lines;
     }
 
-    private sendLines(lines: string[]): void {
-        var runNext = (index: number): void => {
-            var thenable: Thenable<void> = this.onLine(lines[index]);
-            if (index + 1 < lines.length) {
-                thenable.then(() => runNext(index + 1));
-            }
-        };
-        runNext(0);
+    private sendLines(): void {
+        if(!this.writing) {
+            var runNext = (): void => {
+                this.writing = true;
+                var line = this.linesQueue.shift();
+                var thenable: Thenable<void> = this.onLine(line);
+                if (this.linesQueue.length != 0) {
+                    thenable.then(() => runNext());
+                } else {
+                    this.writing = false;
+                }
+            };
+            runNext();
+        }
     }
 }
 
