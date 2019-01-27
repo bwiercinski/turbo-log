@@ -33,7 +33,7 @@ export class FileChangeListener extends EventEmitter {
             if (err) this.emit('error', err)
             if (newStats) {
                 if (stats == null) stats = newStats;
-                if (stats.ctime != newStats.ctime || stats.size != newStats.size)
+                if (stats.size != newStats.size)
                     this.emit('fileChanged',
                         {
                             filePath: this.observedFilePath,
